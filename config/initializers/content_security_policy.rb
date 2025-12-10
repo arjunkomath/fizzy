@@ -13,6 +13,10 @@ Rails.application.configure do
       config.x.content_security_policy.report_only
     end
 
+  s3_endpoint = ENV["S3_ENDPOINT"]
+  connect_sources = [ :self, "https://storage.basecamp.com" ]
+  connect_sources << s3_endpoint if s3_endpoint.present?
+
   # Generate nonces for importmap and inline scripts
   config.content_security_policy_nonce_generator = ->(request) { SecureRandom.base64(16) }
   config.content_security_policy_nonce_directives = %w[ script-src ]
@@ -20,7 +24,7 @@ Rails.application.configure do
   config.content_security_policy do |policy|
     policy.default_src :self
     policy.script_src :self, "https://challenges.cloudflare.com"
-    policy.connect_src :self, "https://storage.basecamp.com"
+    policy.connect_src(*connect_sources)
     policy.frame_src :self, "https://challenges.cloudflare.com"
 
     # Don't fight user tools: permit inline styles, data:/https: sources, and
